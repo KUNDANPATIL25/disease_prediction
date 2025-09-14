@@ -16,15 +16,9 @@ logger = logging.getLogger(__name__)
 
 # Load model and symptoms
 try:
-    print(f"Current working directory: {os.getcwd()}")
-    model_path = os.path.join(os.getcwd(), 'disease_model.pkl')
-    symptoms_path = os.path.join(os.getcwd(), 'symptoms.pkl')
-    print(f"Model path: {model_path}")
-    print(f"Symptoms path: {symptoms_path}")
-    model = joblib.load(model_path)
-    symptoms = joblib.load(symptoms_path)
+    model = joblib.load('disease_model.pkl')
+    symptoms = joblib.load('symptoms.pkl')
     logger.info("Model and symptoms loaded successfully")
-    print(f"Model loaded: {model is not None}")
 except Exception as e:
     logger.error(f"Error loading model files: {str(e)}")
     # Create dummy data for testing if files aren't available

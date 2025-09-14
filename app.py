@@ -16,9 +16,15 @@ logger = logging.getLogger(__name__)
 
 # Load model and symptoms
 try:
-    model = joblib.load('disease_model.pkl')
-    symptoms = joblib.load('symptoms.pkl')
+    print(f"Current working directory: {os.getcwd()}")
+    model_path = os.path.join(os.getcwd(), 'disease_model.pkl')
+    symptoms_path = os.path.join(os.getcwd(), 'symptoms.pkl')
+    print(f"Model path: {model_path}")
+    print(f"Symptoms path: {symptoms_path}")
+    model = joblib.load(model_path)
+    symptoms = joblib.load(symptoms_path)
     logger.info("Model and symptoms loaded successfully")
+    print(f"Model loaded: {model is not None}")
 except Exception as e:
     logger.error(f"Error loading model files: {str(e)}")
     # Create dummy data for testing if files aren't available
@@ -39,12 +45,14 @@ def predict():
         selected_symptoms = data.get('symptoms', [])
         logger.info(f"Received symptoms: {selected_symptoms}")
         
-        # Create symptom vector
-        symptom_vector = [1 if symptom in selected_symptoms else 0 for symptom in symptoms]
-        logger.info(f"Symptom vector: {symptom_vector}")
-        
+        # Create symptom vector as DataFrame with feature names
+        import pandas as pd
+        symptom_vector_dict = {symptom: 1 if symptom in selected_symptoms else 0 for symptom in symptoms}
+        symptom_vector_df = pd.DataFrame([symptom_vector_dict])
+        logger.info(f"Symptom vector dict: {symptom_vector_dict}")
+
         # Get probabilities for all diseases
-        probabilities = model.predict_proba([symptom_vector])[0]
+        probabilities = model.predict_proba(symptom_vector_df)[0]
         disease_names = model.classes_
         
         # Create list of (disease, probability) pairs

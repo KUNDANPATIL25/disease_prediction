@@ -72,9 +72,9 @@ def test_prediction_function():
 
 if __name__ == '__main__':
     print("=== Training and Testing Disease Prediction Model ===\n")
-    
+
     # Train the model (uncomment if you want to retrain)
-    # train_and_test_model()
-    
+    train_and_test_model()
+
     print("\n=== Testing Prediction Function ===\n")
     test_prediction_function()

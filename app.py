@@ -18,10 +18,12 @@ logger = logging.getLogger(__name__)
 try:
     model = joblib.load('disease_model.pkl')
     symptoms = joblib.load('symptoms.pkl')
-except:
-    logger.warning("Model files not found. Running in API-only mode.")
+    logger.info("Model and symptoms loaded successfully")
+except Exception as e:
+    logger.error(f"Error loading model files: {str(e)}")
+    # Create dummy data for testing if files aren't available
+    symptoms = ['itching', 'skin_rash', 'nodal_skin_eruptions', 'continuous_sneezing', 'shivering']
     model = None
-    symptoms = []
 
 @app.route('/')
 def home():
@@ -30,6 +32,9 @@ def home():
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
+        if model is None:
+            return jsonify({'error': 'Model not loaded. Please check server logs.'}), 500
+            
         data = request.get_json()
         selected_symptoms = data.get('symptoms', [])
         logger.info(f"Received symptoms: {selected_symptoms}")

@@ -2,6 +2,11 @@ from flask import Flask, request, jsonify, render_template
 import joblib
 import numpy as np
 import logging
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -10,8 +15,13 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Load model and symptoms
-model = joblib.load('disease_model.pkl')
-symptoms = joblib.load('symptoms.pkl')
+try:
+    model = joblib.load('disease_model.pkl')
+    symptoms = joblib.load('symptoms.pkl')
+except:
+    logger.warning("Model files not found. Running in API-only mode.")
+    model = None
+    symptoms = []
 
 @app.route('/')
 def home():
@@ -54,4 +64,5 @@ def predict():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)

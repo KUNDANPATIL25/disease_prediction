@@ -1,0 +1,57 @@
+from flask import Flask, request, jsonify, render_template
+import joblib
+import numpy as np
+import logging
+
+app = Flask(__name__)
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Load model and symptoms
+model = joblib.load('disease_model.pkl')
+symptoms = joblib.load('symptoms.pkl')
+
+@app.route('/')
+def home():
+    return render_template('index.html', symptoms=symptoms)
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    try:
+        data = request.get_json()
+        selected_symptoms = data.get('symptoms', [])
+        logger.info(f"Received symptoms: {selected_symptoms}")
+        
+        # Create symptom vector
+        symptom_vector = [1 if symptom in selected_symptoms else 0 for symptom in symptoms]
+        logger.info(f"Symptom vector: {symptom_vector}")
+        
+        # Get probabilities for all diseases
+        probabilities = model.predict_proba([symptom_vector])[0]
+        disease_names = model.classes_
+        
+        # Create list of (disease, probability) pairs
+        disease_probs = list(zip(disease_names, probabilities))
+        
+        # Sort by probability (descending) and get top 3
+        disease_probs.sort(key=lambda x: x[1], reverse=True)
+        top_predictions = disease_probs[:3]
+        
+        logger.info(f"Top predictions: {top_predictions}")
+        
+        # Convert numpy types to Python native types for JSON serialization
+        predictions_serializable = [
+            [str(disease), float(probability)] 
+            for disease, probability in top_predictions
+        ]
+        
+        return jsonify({'predictions': predictions_serializable})
+        
+    except Exception as e:
+        logger.error(f"Error in prediction: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True)

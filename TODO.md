@@ -1,0 +1,3 @@
+- [ ] Remove extra void spaces in HTML
+- [ ] Add disclaimer in prediction modal that it cannot be accurate, just a prediction
+- [ ] Add styling to the prediction card
